@@ -1,120 +1,99 @@
 import streamlit as st
 
-# Configuração da página do aplicativo
+# Configuração da página
 st.set_page_config(page_title="Calculadora de Precificação - Tattoo", page_icon="🎨", layout="centered")
 
 st.title("🎨 Calculadora de Precificação de Tatuagens")
-st.write("Insira os parâmetros abaixo para calcular o orçamento ideal do trabalho.")
+st.write("Insira os parâmetros para calcular o orçamento ideal.")
 
 st.divider()
 
-# --- INPUTS DO USUÁRIO ---
-
-# 1. Valor Base (Custo por hora ou valor base da sua sessão)
+# --- INPUTS GERAIS ---
 valor_base = st.number_input("Valor Base do seu trabalho (R$):", min_value=50, value=150, step=10)
+num_sessoes = st.number_input("Quantidade de Sessões Estimadas:", min_value=1, value=1, step=1)
 
-# 2. CHAVE ATIVÁVEL: Tipo de Cobrança (Sessão vs Tamanho)
-tipo_cobranca = st.radio("Forma de Cobrança:", ["Por Peça (Tamanho)", "Por Sessão / Fechamento"])
+# --- CHAVE DE FECHAMENTO ---
+is_fechamento = st.checkbox("É um projeto de Fechamento?")
 
-if tipo_cobranca == "Por Peça (Tamanho)":
-    # 3. Tamanho (Apenas se for cobrado por peça única)
+if is_fechamento:
+    # Lista de Fechamentos
+    fechamentos_lista = [
+        "Pescoço", "Braço superior externo", "Braço superior interno", "Braço superior completo",
+        "Antebraço externo", "Antebraço interno", "Antebraço completo", "Braço externo",
+        "Braço interno", "Braço completo", "Costas", "Costela", "Torax", "Coxa frontal",
+        "Coxa traseira", "Coxa lateral externa", "Coxa lateral interna", "Coxa completa",
+        "Canela", "Panturrilha", "Panturrilha lateral externa", "Panturrilha lateral interna",
+        "Perna inferior completo", "Perna completa"
+    ]
+    tipo_fechamento = st.selectbox("Qual o Fechamento?", fechamentos_lista)
+    tamanho = "Fechamento"
+    regiao = "Fechamento"
+else:
+    # Inputs tradicionais
     tamanho_opcoes = ["PP (Até 3cm)", "P (4cm a 8cm)", "M (9cm a 14cm)", "G (15cm a 20cm)", "GG (21cm a 28cm)"]
     tamanho = st.selectbox("Tamanho da Tatuagem:", tamanho_opcoes)
-    num_sessoes = 1
-else:
-    # 3. Número de Sessões (Ativado se for um projeto longo/fechamento)
-    tamanho = "Sessão/Fechamento"
-    num_sessoes = st.number_input("Quantidade de Sessões Estimadas:", min_value=1, value=1, step=1)
+    
+    corpo_facil = ["Braço parte externa", "Antebraço parte externa", "Panturrilhas"]
+    corpo_media = ["Mãos", "Pés", "Braço parte interna", "Antebraço parte interna", "Ombro", "Nuca", "Coxas frente", "Coxas trás", "Coxas lateral externa", "Canelas", "Lateral externa canela"]
+    corpo_dificil = ["Pescoço", "Peito", "Underboobs", "Barriga", "Lombar", "Coxas lateral interna", "Quadril", "Nádegas", "Lateral interna canela", "Costas parte torácica"]
+    corpo_extrema = ["Costela", "Cotovelo", "Joelho"]
+    
+    regiao = st.selectbox("Região do Corpo:", corpo_facil + corpo_media + corpo_dificil + corpo_extrema)
 
-# 4. Estilo da Tatuagem
+# Estilo
 estilo_opcoes = ["Seu Estilo (Autoral)", "Neo Tradicional", "Anime", "Blackwork", "Oldschool", "Aquarela", "Fineline", "Escrita"]
-st.write("") 
 estilo = st.selectbox("Estilo da Tatuagem:", estilo_opcoes)
 
-# 5. Região do Corpo (Agrupadas por nível de dificuldade/dor)
-corpo_facil = ["Braço parte externa", "Antebraço parte externa", "Panturrilhas"]
-corpo_media = ["Mãos", "Pés", "Braço parte interna", "Antebraço parte interna", "Ombro", "Nuca", "Coxas frente", "Coxas trás", "Coxas lateral externa", "Canelas", "Lateral externa canela"]
-corpo_dificil = ["Pescoço", "Peito", "Underboobs", "Barriga", "Lombar", "Coxas lateral interna", "Quadril", "Nádegas", "Lateral interna canela", "Costas parte torácica"]
-corpo_extrema = ["Costela"]
-corpo_fechamentos = ["Fechamento: Braço", "Fechamento: Perna", "Fechamento: Costas", "Fechamento: Torácico"]
-
-todas_regioes = corpo_facil + corpo_media + corpo_dificil + corpo_extrema + corpo_fechamentos
-regiao = st.selectbox("Região do Corpo / Localização:", todas_regioes)
-
-# 6. Quantidade de Cores Adicionais
 cores = st.number_input("Quantidade de cores adicionais:", min_value=0, max_value=20, value=0, step=1)
 
 st.divider()
 
-# --- LÓGICA DOS MULTIPLICADORES ---
+# --- LÓGICA DE MULTIPLICADORES ---
 
-# Multiplicador de Estilo (Ajustado com Neo Tradicional e Anime em 1.8)
-if estilo == "Seu Estilo (Autoral)":
-    mult_estilo = 2.0  
-elif estilo in ["Neo Tradicional", "Anime"]:
-    mult_estilo = 1.8
-elif estilo == "Blackwork":
-    mult_estilo = 1.5
-elif estilo in ["Oldschool", "Aquarela"]:
-    mult_estilo = 1.3
-else:  # Fineline, Escrita
-    mult_estilo = 1.0
+# Multiplicador de Estilo
+if estilo == "Seu Estilo (Autoral)": mult_estilo = 2.0
+elif estilo in ["Neo Tradicional", "Anime"]: mult_estilo = 1.8
+elif estilo == "Blackwork": mult_estilo = 1.5
+elif estilo in ["Oldschool", "Aquarela"]: mult_estilo = 1.3
+else: mult_estilo = 1.0
 
-# Multiplicador de Região do Corpo
-if regiao in corpo_facil:
-    mult_corpo = 1.0
-elif regiao in corpo_media:
-    mult_corpo = 1.2
-elif regiao in corpo_dificil:
-    mult_corpo = 1.4
-else:  # Costela ou Fechamentos complexos
-    mult_corpo = 1.6
+# Multiplicador de Área/Corpo
+if is_fechamento:
+    # Multiplicadores baseados na magnitude do fechamento
+    if tipo_fechamento in ["Costas", "Perna completa", "Braço completo"]: mult_area = 3.5
+    elif tipo_fechamento in ["Torax", "Coxa completa", "Perna inferior completo"]: mult_area = 2.8
+    else: mult_area = 2.0 # Fechamentos menores
+else:
+    # Multiplicadores de tamanho padrão
+    if tamanho == "PP (Até 3cm)": mult_area = 1.0
+    elif tamanho == "P (4cm a 8cm)": mult_area = 1.5
+    elif tamanho == "M (9cm a 14cm)": mult_area = 2.5
+    elif tamanho == "G (15cm a 20cm)": mult_area = 4.0
+    else: mult_area = 6.0 # GG
 
-# Custo fixo estimado por cor adicional (multiplicado pelo número de sessões)
+# Multiplicador de Região (Para peça única apenas)
+if not is_fechamento:
+    if regiao in ["Braço parte externa", "Antebraço parte externa", "Panturrilhas"]: mult_regiao = 1.0
+    elif regiao in ["Mãos", "Pés", "Braço parte interna", "Antebraço parte interna", "Ombro", "Nuca", "Coxas frente", "Coxas trás", "Coxas lateral externa", "Canelas", "Lateral externa canela"]: mult_regiao = 1.2
+    elif regiao in ["Pescoço", "Peito", "Underboobs", "Barriga", "Lombar", "Coxas lateral interna", "Quadril", "Nádegas", "Lateral interna canela", "Costas parte torácica"]: mult_regiao = 1.4
+    else: mult_regiao = 1.6 # Costela, Cotovelo, Joelho
+else:
+    mult_regiao = 1.0 # Já embutido no multiplicador de área do fechamento
+
 custo_cores = cores * 30 * num_sessoes
 
-# --- CÁLCULO FINAL ---
-if tipo_cobranca == "Por Sessão / Fechamento":
-    # Multiplica o valor base pelo número de sessões estimadas e aplica a complexidade da região/estilo
-    valor_total = (valor_base * num_sessoes * mult_estilo * mult_corpo) + custo_cores
-else:
-    # Lógica padrão baseada nos tamanhos em cm
-    if tamanho == "PP (Até 3cm)":
-        mult_tamanho = 1.0
-    elif tamanho == "P (4cm a 8cm)":
-        mult_tamanho = 1.5
-    elif tamanho == "M (9cm a 14cm)":
-        mult_tamanho = 2.5
-    elif tamanho == "G (15cm a 20cm)":
-        mult_tamanho = 4.0
-    else:  # GG (21cm a 28cm)
-        mult_tamanho = 6.0
-        
-    valor_total = (valor_base * mult_tamanho * mult_estilo * mult_corpo) + custo_cores
-
-# Divisão financeira das porcentagens
+# --- CÁLCULO ---
+valor_total = (valor_base * num_sessoes * mult_estilo * mult_area * mult_regiao) + custo_cores
 sua_parte = valor_total * 0.70
 parte_estudio = valor_total * 0.30
 
-# --- EXIBIÇÃO DOS RESULTADOS ---
+# --- RESULTADOS ---
 st.subheader("💰 Divisão do Orçamento")
-
-# Exibição do valor cheio de destaque
 st.metric(label="Valor Total cobrado do Cliente", value=f"R$ {valor_total:,.2f}")
 
-st.write("") 
-
-# Colunas para visualização da sua parte e do estúdio
 col1, col2 = st.columns(2)
+with col1: st.metric(label="Sua Parte (70%)", value=f"R$ {sua_parte:,.2f}")
+with col2: st.metric(label="Parte do Estúdio (30%)", value=f"R$ {parte_estudio:,.2f}")
 
-with col1:
-    st.metric(label="Sua Parte (70%)", value=f"R$ {sua_parte:,.2f}")
-
-with col2:
-    st.metric(label="Parte do Estúdio (30%)", value=f"R$ {parte_estudio:,.2f}")
-
-# Caso seja parcelado por sessões, mostra quanto custará em média cada sessão para o cliente
-if tipo_cobranca == "Por Sessão / Fechamento" and num_sessoes > 1:
+if num_sessoes > 1:
     st.info(f"📋 Média por Sessão: R$ {(valor_total / num_sessoes):,.2f} (Total de {num_sessoes} sessões)")
-
-st.caption("Nota: Os multiplicadores dão prioridade máxima ao valor da arte autoral, além de considerar a dificuldade da pele e custos de bancada.")
