@@ -15,21 +15,20 @@ num_sessoes = st.number_input("Quantidade de Sessões Estimadas:", min_value=1, 
 # --- CHAVE DE FECHAMENTO ---
 is_fechamento = st.checkbox("É um projeto de Fechamento?")
 
+# Definição dos grupos de Fechamento por Dificuldade
+fechamento_facil = ["Antebraço externo", "Braço superior externo", "Panturrilha", "Canela", "Panturrilha lateral externa"]
+fechamento_medio = ["Antebraço interno", "Braço superior interno", "Braço externo", "Braço interno", "Coxa frontal", "Coxa traseira", "Coxa lateral externa", "Panturrilha lateral interna"]
+fechamento_dificil = ["Pescoço", "Torax", "Antebraço completo", "Braço superior completo", "Coxa lateral interna", "Perna inferior completo"]
+fechamento_extremo = ["Braço completo", "Costas", "Costela", "Coxa completa", "Perna completa"]
+
 if is_fechamento:
-    # Lista de Fechamentos
-    fechamentos_lista = [
-        "Pescoço", "Braço superior externo", "Braço superior interno", "Braço superior completo",
-        "Antebraço externo", "Antebraço interno", "Antebraço completo", "Braço externo",
-        "Braço interno", "Braço completo", "Costas", "Costela", "Torax", "Coxa frontal",
-        "Coxa traseira", "Coxa lateral externa", "Coxa lateral interna", "Coxa completa",
-        "Canela", "Panturrilha", "Panturrilha lateral externa", "Panturrilha lateral interna",
-        "Perna inferior completo", "Perna completa"
-    ]
+    # Lista unificada para o menu do usuário
+    fechamentos_lista = fechamento_facil + fechamento_medio + fechamento_dificil + fechamento_extremo
     tipo_fechamento = st.selectbox("Qual o Fechamento?", fechamentos_lista)
     tamanho = "Fechamento"
     regiao = "Fechamento"
 else:
-    # Inputs tradicionais
+    # Inputs tradicionais para peças isoladas
     tamanho_opcoes = ["PP (Até 3cm)", "P (4cm a 8cm)", "M (9cm a 14cm)", "G (15cm a 20cm)", "GG (21cm a 28cm)"]
     tamanho = st.selectbox("Tamanho da Tatuagem:", tamanho_opcoes)
     
@@ -50,36 +49,43 @@ st.divider()
 
 # --- LÓGICA DE MULTIPLICADORES ---
 
-# Multiplicador de Estilo
+# 1. Multiplicador de Estilo
 if estilo == "Seu Estilo (Autoral)": mult_estilo = 2.0
 elif estilo in ["Neo Tradicional", "Anime"]: mult_estilo = 1.8
 elif estilo == "Blackwork": mult_estilo = 1.5
 elif estilo in ["Oldschool", "Aquarela"]: mult_estilo = 1.3
 else: mult_estilo = 1.0
 
-# Multiplicador de Área/Corpo
+# 2. Multiplicador de Área / Fechamento (Equivalente à lógica de tamanho e dificuldade combinadas)
 if is_fechamento:
-    # Multiplicadores baseados na magnitude do fechamento
-    if tipo_fechamento in ["Costas", "Perna completa", "Braço completo"]: mult_area = 3.5
-    elif tipo_fechamento in ["Torax", "Coxa completa", "Perna inferior completo"]: mult_area = 2.8
-    else: mult_area = 2.0 # Fechamentos menores
+    if tipo_fechamento in fechamento_facil: 
+        mult_area = 2.0
+        classe_dif = "Fácil/Padrão"
+    elif tipo_fechamento in fechamento_medio: 
+        mult_area = 2.6
+        classe_dif = "Média"
+    elif tipo_fechamento in fechamento_dificil: 
+        mult_area = 3.4
+        classe_dif = "Difícil"
+    else: 
+        mult_area = 4.5
+        classe_dif = "Extrema"
+    mult_regiao = 1.0 # Embutido na categoria do fechamento
 else:
-    # Multiplicadores de tamanho padrão
+    # Multiplicadores de tamanho padrão para peças isoladas
     if tamanho == "PP (Até 3cm)": mult_area = 1.0
     elif tamanho == "P (4cm a 8cm)": mult_area = 1.5
     elif tamanho == "M (9cm a 14cm)": mult_area = 2.5
     elif tamanho == "G (15cm a 20cm)": mult_area = 4.0
     else: mult_area = 6.0 # GG
 
-# Multiplicador de Região (Para peça única apenas)
-if not is_fechamento:
-    if regiao in ["Braço parte externa", "Antebraço parte externa", "Panturrilhas"]: mult_regiao = 1.0
-    elif regiao in ["Mãos", "Pés", "Braço parte interna", "Antebraço parte interna", "Ombro", "Nuca", "Coxas frente", "Coxas trás", "Coxas lateral externa", "Canelas", "Lateral externa canela"]: mult_regiao = 1.2
-    elif regiao in ["Pescoço", "Peito", "Underboobs", "Barriga", "Lombar", "Coxas lateral interna", "Quadril", "Nádegas", "Lateral interna canela", "Costas parte torácica"]: mult_regiao = 1.4
+    # Multiplicador de Região Isolada
+    if regiao in corpo_facil: mult_regiao = 1.0
+    elif regiao in corpo_media: mult_regiao = 1.2
+    elif regiao in corpo_dificil: mult_regiao = 1.4
     else: mult_regiao = 1.6 # Costela, Cotovelo, Joelho
-else:
-    mult_regiao = 1.0 # Já embutido no multiplicador de área do fechamento
 
+# Custo de insumos por cor (multiplicado pelo número de sessões abertas)
 custo_cores = cores * 30 * num_sessoes
 
 # --- CÁLCULO ---
@@ -95,5 +101,11 @@ col1, col2 = st.columns(2)
 with col1: st.metric(label="Sua Parte (70%)", value=f"R$ {sua_parte:,.2f}")
 with col2: st.metric(label="Parte do Estúdio (30%)", value=f"R$ {parte_estudio:,.2f}")
 
+# Notas informativas adicionais na tela
+if is_fechamento:
+    st.caption(f"ℹ️ Complexidade do Fechamento selecionado: **{classe_dif}** (Multiplicador de Área: {mult_area})")
+
 if num_sessoes > 1:
     st.info(f"📋 Média por Sessão: R$ {(valor_total / num_sessoes):,.2f} (Total de {num_sessoes} sessões)")
+
+st.caption("Nota: Os multiplicadores dão prioridade máxima ao valor da arte autoral, além de considerar a dificuldade da pele, relevo e custos de bancada.")
