@@ -26,9 +26,9 @@ else:
     tamanho = "Sessão/Fechamento"
     num_sessoes = st.number_input("Quantidade de Sessões Estimadas:", min_value=1, value=1, step=1)
 
-# 4. Estilo da Tatuagem (Excluindo realismo, colorido e preto/cinza)
-estilo_opcoes = ["Seu Estilo", "Blackwork", "Oldschool", "Fineline", "Escrita", "Anime", "Aquarela", "Neo Tradicional"]
-st.write("") # Apenas um espaçamento visual
+# 4. Estilo da Tatuagem
+estilo_opcoes = ["Seu Estilo (Autoral)", "Neo Tradicional", "Anime", "Blackwork", "Oldschool", "Aquarela", "Fineline", "Escrita"]
+st.write("") 
 estilo = st.selectbox("Estilo da Tatuagem:", estilo_opcoes)
 
 # 5. Região do Corpo (Agrupadas por nível de dificuldade/dor)
@@ -48,13 +48,17 @@ st.divider()
 
 # --- LÓGICA DOS MULTIPLICADORES ---
 
-# Multiplicador de Estilo
-if estilo in ["Escrita", "Fineline"]:
-    mult_estilo = 1.0
-elif estilo in ["Blackwork", "Neo Tradicional"]:
+# Multiplicador de Estilo (Ajustado com Neo Tradicional e Anime em 1.8)
+if estilo == "Seu Estilo (Autoral)":
+    mult_estilo = 2.0  
+elif estilo in ["Neo Tradicional", "Anime"]:
+    mult_estilo = 1.8
+elif estilo == "Blackwork":
     mult_estilo = 1.5
-else:  # Seu Estilo, Oldschool, Anime, Aquarela
+elif estilo in ["Oldschool", "Aquarela"]:
     mult_estilo = 1.3
+else:  # Fineline, Escrita
+    mult_estilo = 1.0
 
 # Multiplicador de Região do Corpo
 if regiao in corpo_facil:
@@ -66,7 +70,7 @@ elif regiao in corpo_dificil:
 else:  # Costela ou Fechamentos complexos
     mult_corpo = 1.6
 
-# Custo fixo estimado por cor adicional (multiplicado pelo número de sessões, pois gasta material a cada abertura de bancada)
+# Custo fixo estimado por cor adicional (multiplicado pelo número de sessões)
 custo_cores = cores * 30 * num_sessoes
 
 # --- CÁLCULO FINAL ---
@@ -88,22 +92,29 @@ else:
         
     valor_total = (valor_base * mult_tamanho * mult_estilo * mult_corpo) + custo_cores
 
-# Divisão dos 70%
+# Divisão financeira das porcentagens
 sua_parte = valor_total * 0.70
+parte_estudio = valor_total * 0.30
 
 # --- EXIBIÇÃO DOS RESULTADOS ---
-st.subheader("💰 Orçamento Calculado")
+st.subheader("💰 Divisão do Orçamento")
 
+# Exibição do valor cheio de destaque
+st.metric(label="Valor Total cobrado do Cliente", value=f"R$ {valor_total:,.2f}")
+
+st.write("") 
+
+# Colunas para visualização da sua parte e do estúdio
 col1, col2 = st.columns(2)
 
 with col1:
-    st.metric(label="Valor Total para o Cliente", value=f"R$ {valor_total:,.2f}")
+    st.metric(label="Sua Parte (70%)", value=f"R$ {sua_parte:,.2f}")
 
 with col2:
-    st.metric(label="Sua Parte (70%)", value=f"R$ {sua_parte:,.2f}")
+    st.metric(label="Parte do Estúdio (30%)", value=f"R$ {parte_estudio:,.2f}")
 
 # Caso seja parcelado por sessões, mostra quanto custará em média cada sessão para o cliente
 if tipo_cobranca == "Por Sessão / Fechamento" and num_sessoes > 1:
     st.info(f"📋 Média por Sessão: R$ {(valor_total / num_sessoes):,.2f} (Total de {num_sessoes} sessões)")
 
-st.caption("Nota: Os multiplicadores levam em conta a complexidade do estilo, dificuldade da pele e os custos repetíveis a cada sessão.")
+st.caption("Nota: Os multiplicadores dão prioridade máxima ao valor da arte autoral, além de considerar a dificuldade da pele e custos de bancada.")
