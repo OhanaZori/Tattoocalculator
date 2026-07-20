@@ -18,7 +18,7 @@ is_fechamento = st.checkbox("É um projeto de Fechamento?")
 # Definição dos grupos de Fechamento por Dificuldade
 fechamento_facil = ["Antebraço externo", "Braço superior externo", "Panturrilha", "Canela", "Panturrilha lateral externa"]
 fechamento_medio = ["Antebraço interno", "Braço superior interno", "Braço externo", "Braço interno", "Coxa frontal", "Coxa traseira", "Coxa lateral externa", "Panturrilha lateral interna"]
-fechamento_dificil = ["Pescoço", "Torax", "Antebraço completo", "Braço superior completo", "Coxa lateral interna", "Perna inferior completo"]
+fechamento_dificil = ["Pescoço", "Torax", "Antebraço completo", "Braço superior completo", "Coxa lateral interna", "Perna inferior completo", "Pé"]
 fechamento_extremo = ["Braço completo", "Costas", "Costela", "Coxa completa", "Perna completa"]
 
 if is_fechamento:
@@ -32,15 +32,15 @@ else:
     tamanho_opcoes = ["PP (Até 3cm)", "P (4cm a 8cm)", "M (9cm a 14cm)", "G (15cm a 20cm)", "GG (21cm a 28cm)"]
     tamanho = st.selectbox("Tamanho da Tatuagem:", tamanho_opcoes)
     
-    corpo_facil = ["Braço parte externa", "Antebraço parte externa", "Panturrilhas"]
-    corpo_media = ["Mãos", "Pés", "Braço parte interna", "Antebraço parte interna", "Ombro", "Nuca", "Coxas frente", "Coxas trás", "Coxas lateral externa", "Canelas", "Lateral externa canela"]
-    corpo_dificil = ["Pescoço", "Peito", "Underboobs", "Barriga", "Lombar", "Coxas lateral interna", "Quadril", "Nádegas", "Lateral interna canela", "Costas parte torácica"]
+    corpo_facil = ["Braço parte externa", "Antebraço parte externa", "Panturrilha"]
+    corpo_media = ["Mão", "Braço parte interna", "Antebraço parte interna", "Ombro", "Nuca", "Coxas frente", "Coxas trás", "Coxas lateral externa", "Canelas", "Lateral externa canela"]
+    corpo_dificil = ["Pescoço", "Peito", "Underboob", "Barriga", "Lombar", "Coxas lateral interna", "Quadril", "Nádegas", "Lateral interna canela", "Costas parte torácica", "Pé"]
     corpo_extrema = ["Costela", "Cotovelo", "Joelho"]
     
     regiao = st.selectbox("Região do Corpo:", corpo_facil + corpo_media + corpo_dificil + corpo_extrema)
 
 # Estilo
-estilo_opcoes = ["Seu Estilo (Autoral)", "Neo Tradicional", "Anime", "Blackwork", "Oldschool", "Aquarela", "Fineline", "Escrita"]
+estilo_opcoes = ["Meu Estilo", "Neo Tradicional", "Anime", "Blackwork", "Oldschool", "Aquarela", "Fineline", "Escrita"]
 estilo = st.selectbox("Estilo da Tatuagem:", estilo_opcoes)
 
 cores = st.number_input("Quantidade de cores adicionais:", min_value=0, max_value=20, value=0, step=1)
@@ -50,7 +50,7 @@ st.divider()
 # --- LÓGICA DE MULTIPLICADORES ---
 
 # 1. Multiplicador de Estilo
-if estilo == "Seu Estilo (Autoral)": mult_estilo = 2.0
+if estilo == "Meu Estilo": mult_estilo = 2.0
 elif estilo in ["Neo Tradicional", "Anime"]: mult_estilo = 1.8
 elif estilo == "Blackwork": mult_estilo = 1.5
 elif estilo in ["Oldschool", "Aquarela"]: mult_estilo = 1.3
@@ -76,14 +76,14 @@ else:
     if tamanho == "PP (Até 3cm)": mult_area = 1.0
     elif tamanho == "P (4cm a 8cm)": mult_area = 1.5
     elif tamanho == "M (9cm a 14cm)": mult_area = 2.5
-    elif tamanho == "G (15cm a 20cm)": mult_area = 4.0
-    else: mult_area = 6.0 # GG
+    elif tamanho == "G (15cm a 20cm)": mult_area = 3.5
+    else: mult_area = 4.8 # GG
 
     # Multiplicador de Região Isolada
     if regiao in corpo_facil: mult_regiao = 1.0
-    elif regiao in corpo_media: mult_regiao = 1.2
-    elif regiao in corpo_dificil: mult_regiao = 1.4
-    else: mult_regiao = 1.6 # Costela, Cotovelo, Joelho
+    elif regiao in corpo_media: mult_regiao = 1.4
+    elif regiao in corpo_dificil: mult_regiao = 1.8
+    else: mult_regiao = 2.0 # Costela, Cotovelo, Joelho
 
 # Custo de insumos por cor (multiplicado pelo número de sessões abertas)
 custo_cores = cores * 30 * num_sessoes
