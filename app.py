@@ -32,10 +32,10 @@ else:
     tamanho_opcoes = ["PP (Até 3cm)", "P (4cm a 8cm)", "M (9cm a 14cm)", "G (15cm a 20cm)", "GG (21cm a 28cm)"]
     tamanho = st.selectbox("Tamanho da Tatuagem:", tamanho_opcoes)
     
-    corpo_facil = ["Braço parte externa", "Antebraço parte externa", "Panturrilha"]
-    corpo_media = ["Mão", "Braço parte interna", "Antebraço parte interna", "Ombro", "Nuca", "Coxas frente", "Coxas trás", "Coxas lateral externa", "Canelas", "Lateral externa canela"]
-    corpo_dificil = ["Pescoço", "Peito", "Underboob", "Barriga", "Lombar", "Coxas lateral interna", "Quadril", "Nádegas", "Lateral interna canela", "Costas parte torácica", "Pé"]
-    corpo_extrema = ["Costela", "Cotovelo", "Joelho"]
+    corpo_facil = ["Braço parte externa", "Antebraço parte externa", "Panturrilha", "Panturrilha lateral"]
+    corpo_media = ["Mão", "Braço parte interna", "Antebraço parte interna", "Ombro", "Nuca", "Coxas frente", "Coxas trás", "Coxas lateral externa", "Canelas", "Lateral externa canela", "Quadril"]
+    corpo_dificil = ["Pescoço", "Peito", "Underboob", "Barriga", "Lombar", "Coxas lateral interna", "Nádegas", "Lateral interna canela", "Costas parte torácica", "Pé"]
+    corpo_extrema = ["Costela", "Cotovelo", "Joelho", "Palma"]
     
     regiao = st.selectbox("Região do Corpo:", corpo_facil + corpo_media + corpo_dificil + corpo_extrema)
 
